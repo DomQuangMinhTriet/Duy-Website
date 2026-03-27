@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { createPost, approvePost } from "../controllers/forumController";
+import {
+  createPost,
+  approvePost,
+  getPosts,
+} from "../controllers/forumController";
 import { verifyToken, requireRole } from "../middlewares/authMiddleware";
 
 const router = Router();
@@ -14,5 +18,7 @@ router.put(
   requireRole(["admin"]),
   approvePost,
 );
+
+router.get("/posts", verifyToken, getPosts);
 
 export default router;

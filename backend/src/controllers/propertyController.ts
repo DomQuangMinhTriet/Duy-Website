@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import { supabaseAdmin } from "../config/supabase";
 import { AuthRequest } from "../middlewares/authMiddleware";
 
@@ -48,5 +48,18 @@ export const createProperty = async (
   } catch (error) {
     console.error("Lỗi Server:", error);
     res.status(500).json({ status: "error", message: "Lỗi máy chủ nội bộ" });
+  }
+};
+
+export const getProperties = async (req: Request, res: Response) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("properties")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    res.status(200).json({ data });
+  } catch (err: any) {
+    res.status(500).json({ status: "error", message: err.message });
   }
 };

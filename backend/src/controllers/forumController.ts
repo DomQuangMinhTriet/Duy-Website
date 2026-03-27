@@ -22,13 +22,11 @@ export const createPost = async (
       return;
     }
 
-    res
-      .status(201)
-      .json({
-        status: "success",
-        message: "Đã gửi bài viết, vui lòng chờ Admin duyệt",
-        data,
-      });
+    res.status(201).json({
+      status: "success",
+      message: "Đã gửi bài viết, vui lòng chờ Admin duyệt",
+      data,
+    });
   } catch (error) {
     res.status(500).json({ status: "error", message: "Lỗi máy chủ nội bộ" });
   }
@@ -59,5 +57,18 @@ export const approvePost = async (
       .json({ status: "success", message: "Bài viết đã được xuất bản", data });
   } catch (error) {
     res.status(500).json({ status: "error", message: "Lỗi máy chủ nội bộ" });
+  }
+};
+
+export const getPosts = async (req: Request, res: Response) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("posts")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    res.status(200).json({ data });
+  } catch (err: any) {
+    res.status(500).json({ status: "error", message: err.message });
   }
 };

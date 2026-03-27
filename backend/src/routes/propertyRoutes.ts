@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { createProperty } from "../controllers/propertyController";
+import {
+  createProperty,
+  getProperties,
+} from "../controllers/propertyController";
 import { verifyToken, requireRole } from "../middlewares/authMiddleware";
 import { validateData } from "../middlewares/validateMiddleware";
 import { createPropertySchema } from "../utils/validators";
@@ -17,5 +20,7 @@ router.post(
   validateData(createPropertySchema), // Lớp bảo vệ 3: Zod quét lỗi dữ liệu (Phải đủ số Tầng nếu là Chung cư)
   createProperty, // Cho qua: Vào Controller lưu vào CSDL
 );
+
+router.get("/", verifyToken, getProperties);
 
 export default router;

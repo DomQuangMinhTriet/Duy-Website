@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { upgradeUserRole } from "../controllers/userController";
+import { getUsers, upgradeUserRole } from "../controllers/userController";
 import { verifyToken, requireRole } from "../middlewares/authMiddleware";
 
 const router = Router();
@@ -11,5 +11,5 @@ router.put(
   requireRole(["admin"]),
   upgradeUserRole,
 );
-
+router.get("/", verifyToken, requireRole(["admin"]), getUsers);
 export default router;
