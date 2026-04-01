@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Cấu hình Theme (Màu sắc) trực tiếp tại đây */
+@theme {
+  --color-background: #f7f8fa;
+  --color-foreground: #111827;
+  --color-primary: #c49b5a;
+}
+
+/* Áp dụng màu nền mặc định */
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}

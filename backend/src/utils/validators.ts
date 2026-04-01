@@ -14,47 +14,47 @@ export const authSchema = z.object({
 // ==========================================
 // 2. SCHEMA DỰ ÁN (PROPERTIES) - HYBRID JSONB
 // ==========================================
+
 export const createPropertySchema = z.object({
   body: z
     .object({
-      title: z.string().min(10, "Tiêu đề dự án phải dài hơn 10 ký tự"),
+      title: z.string().min(5, "Tiêu đề dự án phải dài hơn 5 ký tự"), // Đổi 10 thành 5
       slug: z.string().min(3, "Đường dẫn (slug) không hợp lệ"),
       price: z.number().positive("Giá trị dự án phải lớn hơn 0"),
+      // Khớp với giá trị Frontend gửi lên
       property_type: z
-        .enum(["apartment", "land", "house"])
-        .default("apartment"),
+        .enum(["chung_cu", "dat_nen", "nha_pho"])
+        .default("chung_cu"),
       theme_id: z.string().default("theme_default"),
-
-      // SỬA LỖI Ở ĐÂY: Khai báo rõ Key là string, Value là any
       attributes: z.record(z.string(), z.any()).default({}),
     })
     .superRefine((data, ctx) => {
-      // Lưu ý: Vì superRefine đang nằm trực tiếp trên object "body",
-      // nên đường dẫn (path) chỉ cần bắt đầu từ 'attributes' là đủ.
-
-      if (data.property_type === "apartment") {
+      // Cập nhật lại điều kiện check
+      if (
+        data.property_type === "chung_cu" ||
+        data.property_type === "nha_pho"
+      ) {
         if (!data.attributes?.tang) {
           ctx.addIssue({
             code: "custom",
-            path: ["attributes", "tang"], // Đã bỏ 'body' đi để Zod ghép chuỗi chính xác
-            message: "Loại hình Chung cư bắt buộc phải nhập số Tầng",
+            path: ["attributes", "tang"],
+            message: "Bắt buộc nhập số Tầng",
           });
         }
         if (!data.attributes?.phong_ngu) {
           ctx.addIssue({
             code: "custom",
             path: ["attributes", "phong_ngu"],
-            message: "Loại hình Chung cư bắt buộc phải nhập số Phòng ngủ",
+            message: "Bắt buộc nhập số Phòng ngủ",
           });
         }
       }
-
-      if (data.property_type === "land") {
+      if (data.property_type === "dat_nen") {
         if (!data.attributes?.mat_tien) {
           ctx.addIssue({
             code: "custom",
             path: ["attributes", "mat_tien"],
-            message: "Loại hình Đất nền bắt buộc phải nhập thông số Mặt tiền",
+            message: "Bắt buộc nhập Mặt tiền",
           });
         }
       }

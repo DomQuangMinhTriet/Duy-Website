@@ -44,14 +44,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
+    const { data: authData, error: authError } =
+      await supabaseAdmin.auth.signInWithPassword({ email, password });
 
-    // Đăng nhập qua Supabase để lấy Token
-    const { data, error } = await supabaseAdmin.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
+    if (authError || !authData.user) {
       res
         .status(401)
         .json({
@@ -61,11 +57,30 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // LẤY ROLE THỰC TẾ TỪ BẢNG USERS (Tạm bỏ .single() để debug)
+    console.log("👉 1. ID ĐANG TÌM KIẾM:", authData.user.id);
+
+    const { data: userData, error: userError } = await supabaseAdmin
+      .from("users")
+      .select("role")
+      .eq("id", authData.user.id); // <--- BỎ .single() Ở ĐÂY
+
+    if (userError) {
+      console.error("🔴 LỖI TRUY VẤN:", userError.message);
+    }
+
+    console.log("👉 2. KẾT QUẢ TÌM THẤY:", userData);
+
+    // Lấy phần tử đầu tiên của mảng (nếu có), nếu không thì cho làm guest
+    const actualRole =
+      userData && userData.length > 0 ? userData[0].role : "guest";
+    console.log("👉 3. ROLE CHỐT HẠ GỬI CHO FRONTEND:", actualRole);
+
     res.status(200).json({
       status: "success",
       message: "Đăng nhập thành công",
-      token: data.session?.access_token,
-      user: data.user,
+      token: authData.session?.access_token,
+      user: { ...authData.user, role: actualRole },
     });
   } catch (error) {
     res.status(500).json({ status: "error", message: "Lỗi server nội bộ" });

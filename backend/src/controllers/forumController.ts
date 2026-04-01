@@ -9,11 +9,11 @@ export const createPost = async (
 ): Promise<void> => {
   try {
     const { title, content } = req.body;
-    const author_id = req.user?.id; // Lấy ID người đăng từ Token
+    const author_id = req.user?.id;
 
     const { data, error } = await supabaseAdmin
       .from("posts")
-      .insert([{ title, content, author_id, status: "pending" }]) // Mặc định là pending
+      .insert([{ title, content, author_id, status: "pending" }])
       .select()
       .single();
 
@@ -22,11 +22,13 @@ export const createPost = async (
       return;
     }
 
-    res.status(201).json({
-      status: "success",
-      message: "Đã gửi bài viết, vui lòng chờ Admin duyệt",
-      data,
-    });
+    res
+      .status(201)
+      .json({
+        status: "success",
+        message: "Đã gửi bài viết, vui lòng chờ Admin duyệt",
+        data,
+      });
   } catch (error) {
     res.status(500).json({ status: "error", message: "Lỗi máy chủ nội bộ" });
   }
@@ -60,6 +62,7 @@ export const approvePost = async (
   }
 };
 
+// 3. Lấy danh sách bài viết
 export const getPosts = async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabaseAdmin
