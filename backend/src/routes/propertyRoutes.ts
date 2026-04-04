@@ -2,6 +2,12 @@ import { Router } from "express";
 import {
   createProperty,
   getProperties,
+  getPublicProperties,
+  getPropertyBySlug,
+  updatePropertyStatus,
+  deleteProperty,
+  updateProperty,
+  getPropertyById,
 } from "../controllers/propertyController";
 import { verifyToken, requireRole } from "../middlewares/authMiddleware";
 import { validateData } from "../middlewares/validateMiddleware";
@@ -22,5 +28,16 @@ router.post(
 );
 
 router.get("/", verifyToken, getProperties);
+router.get("/public", getPublicProperties);
+router.get("/public/:slug", getPropertyBySlug);
+router.patch(
+  "/:id/status",
+  verifyToken,
+  requireRole(["admin"]),
+  updatePropertyStatus,
+);
+router.delete("/:id", verifyToken, requireRole(["admin"]), deleteProperty);
+router.put("/:id", verifyToken, requireRole(["admin"]), updateProperty);
+router.get("/:id", verifyToken, getPropertyById);
 
 export default router;

@@ -1,6 +1,13 @@
 import { Link } from "react-router-dom";
-import { Plus, Edit, Trash2, Loader2, Building2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Loader2,
+  Building2,
+  CheckCircle,
+} from "lucide-react"; // Thêm CheckCircle
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; // Thêm mutation
 import { propertyService } from "@/services/propertyService";
 
 // Định nghĩa kiểu dữ liệu tạm thời cho Property
@@ -13,20 +20,49 @@ interface Property {
 }
 
 export default function Properties() {
-  // TanStack Query tự động quản lý Cache, Loading, Error cực kỳ thông minh
+  const queryClient = useQueryClient();
+
   const {
     data: propertiesResponse,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["properties"], // Từ khóa để nhớ đệm dữ liệu này
-    queryFn: propertyService.getAll, // Hàm gọi API
+    queryKey: ["properties"],
+    queryFn: propertyService.getAll,
   });
 
-  // Extract mảng dữ liệu từ API Response
   const properties = propertiesResponse?.data || propertiesResponse || [];
 
-  // Hàm format tiền tệ VNĐ
+  // THÊM MUTATION DUYỆT DỰ ÁN
+  const approveMutation = useMutation({
+    mutationFn: (id: string) => propertyService.updateStatus(id, "approved"),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["properties"] }),
+  });
+
+  // MUTATION XÓA DỰ ÁN
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => propertyService.delete(id),
+    onSuccess: () => {
+      alert("Đã xóa dự án thành công!");
+      queryClient.invalidateQueries({ queryKey: ["properties"] }); // Tự động load lại bảng
+    },
+    onError: (err: any) => {
+      alert("Lỗi khi xóa: " + err.message);
+    },
+  });
+
+  // Hàm xác nhận trước khi xóa (Chống xóa nhầm)
+  const handleDelete = (id: string, title: string) => {
+    if (
+      window.confirm(
+        `⚠️ Bạn có chắc chắn muốn xóa vĩnh viễn dự án "${title}" không? Hành động này không thể hoàn tác!`,
+      )
+    ) {
+      deleteMutation.mutate(id);
+    }
+  };
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -119,18 +155,44 @@ export default function Properties() {
                         </span>
                       </td>
                       <td className="px-8 py-5 text-right opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
-                          title="Sửa"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                          title="Xóa"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {/* Thêm thẻ div bọc ngoài với flex, items-center và gap-3 để căn đều mọi thứ tăm tắp */}
+                        <div className="flex items-center justify-end gap-3">
+                          {/* NÚT DUYỆT */}
+                          {item.status === "pending" && (
+                            <button
+                              onClick={() => approveMutation.mutate(item.id)}
+                              disabled={approveMutation.isPending}
+                              className="text-green-500 hover:text-green-600 transition-colors disabled:opacity-50 flex items-center"
+                              title="Duyệt xuất bản"
+                            >
+                              <CheckCircle className="w-5 h-5" />
+                            </button>
+                          )}
+
+                          {/* NÚT SỬA */}
+                          <Link
+                            to={`/admin/properties/edit/${item.id}`}
+                            className="text-gray-400 hover:text-blue-500 transition-colors flex items-center"
+                            title="Sửa"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Link>
+
+                          {/* NÚT XÓA */}
+                          <button
+                            onClick={() => handleDelete(item.id, item.title)}
+                            disabled={deleteMutation.isPending}
+                            className="text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 flex items-center"
+                            title="Xóa"
+                          >
+                            {deleteMutation.isPending &&
+                            deleteMutation.variables === item.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

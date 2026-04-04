@@ -1,13 +1,23 @@
-import { Router } from "express";
-import { createLead, getLeads } from "../controllers/leadController";
-import { validateData } from "../middlewares/validateMiddleware";
+import express from "express";
+import {
+  createLead,
+  getLeads,
+  updateLeadStatus,
+} from "../controllers/leadController";
 import { verifyToken, requireRole } from "../middlewares/authMiddleware";
-import { createLeadSchema } from "../utils/validators";
 
-const router = Router();
+const router = express.Router();
 
-// Khách hàng gửi form (Public API, không cần Token)
-router.post("/", validateData(createLeadSchema), createLead);
+// 🟢 PUBLIC ROUTE: Bất kỳ ai cũng có thể gửi form báo giá (KHÔNG có verifyToken)
+router.post("/", createLead);
+
+// 🔴 PRIVATE ROUTE: Chỉ Admin/Seller đã đăng nhập mới được xem và sửa trạng thái
 router.get("/", verifyToken, requireRole(["admin", "seller"]), getLeads);
+router.patch(
+  "/:id/status",
+  verifyToken,
+  requireRole(["admin", "seller"]),
+  updateLeadStatus,
+);
 
 export default router;

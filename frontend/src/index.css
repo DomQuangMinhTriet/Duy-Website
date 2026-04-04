@@ -1,14 +1,24 @@
+/* 1. Nhúng Google Fonts lên trên cùng */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
+
 @import "tailwindcss";
 
-/* Cấu hình Theme (Màu sắc) trực tiếp tại đây */
+/* 2. Cấu hình Theme trực tiếp cho Tailwind v4 */
 @theme {
   --color-background: #f7f8fa;
   --color-foreground: #111827;
   --color-primary: #c49b5a;
+
+  /* Khai báo Font chữ để dùng các class font-sans, font-serif */
+  --font-sans: "Inter", sans-serif;
+  --font-serif: "Playfair Display", serif;
 }
 
-/* Áp dụng màu nền mặc định */
+/* 3. Áp dụng CSS mặc định cho toàn trang */
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
+  font-family: var(
+    --font-sans
+  ); /* Đặt Inter làm font mặc định cho toàn bộ body */
 }

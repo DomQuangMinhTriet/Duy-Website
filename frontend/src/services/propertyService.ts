@@ -1,6 +1,10 @@
 import { apiClient } from "./apiClient";
 
 export const propertyService = {
+  // CÁC HÀM PUBLIC (Khách hàng dùng)
+  getPublicAll: () => apiClient("/properties/public"),
+  getBySlug: (slug: string) => apiClient(`/properties/public/${slug}`),
+
   // Lấy toàn bộ danh sách dự án
   getAll: () => apiClient("/properties"),
 
@@ -18,5 +22,18 @@ export const propertyService = {
   delete: (id: string) =>
     apiClient(`/properties/${id}`, {
       method: "DELETE",
+    }),
+
+  update: (id: string, payload: any) =>
+    apiClient(`/properties/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+
+  // Cập nhật dự án
+  updateStatus: (id: string, status: string) =>
+    apiClient(`/properties/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
     }),
 };

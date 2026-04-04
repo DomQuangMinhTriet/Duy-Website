@@ -8,18 +8,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { propertyService } from "@/services/propertyService";
 
 // 1. Khởi tạo Schema bắt lỗi bằng Zod
+// Thay thế đoạn propertySchema cũ bằng đoạn này:
 const propertySchema = z.object({
   title: z.string().min(5, "Tên dự án phải có ít nhất 5 ký tự"),
-  price: z
+  price: z.coerce
     .number({ message: "Vui lòng nhập số tiền hợp lệ" })
     .min(1000000, "Giá quá thấp"),
   property_type: z.enum(["chung_cu", "dat_nen", "nha_pho"]),
-  tang: z.number({ message: "Vui lòng nhập số" }).optional(),
-  phong_ngu: z.number({ message: "Vui lòng nhập số" }).optional(),
-  mat_tien: z.number({ message: "Vui lòng nhập số" }).optional(),
+  tang: z.coerce.number().optional(),
+  phong_ngu: z.coerce.number().optional(),
+  mat_tien: z.coerce.number().optional(),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
+type PropertyFormInput = z.input<typeof propertySchema>;
 
 export default function CreateProperty() {
   const navigate = useNavigate();
@@ -37,9 +39,11 @@ export default function CreateProperty() {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<PropertyFormData>({
+  } = useForm<PropertyFormInput, any, PropertyFormData>({
     resolver: zodResolver(propertySchema),
-    defaultValues: { property_type: "chung_cu" },
+    defaultValues: {
+      property_type: "chung_cu",
+    },
   });
 
   const currentPropertyType = watch("property_type");
@@ -63,13 +67,28 @@ export default function CreateProperty() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // 1. KIỂM TRA DUNG LƯỢNG (Tối đa 5MB)
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB tính bằng bytes
+    if (file.size > MAX_SIZE) {
+      setErrorMsg("Dung lượng ảnh vượt quá 5MB. Vui lòng chọn ảnh nhẹ hơn!");
+      return; // Dừng lại, không gọi API
+    }
+
+    // 2. KIỂM TRA ĐỊNH DẠNG (Bắt buộc là ảnh)
+    if (!file.type.startsWith("image/")) {
+      setErrorMsg("Vui lòng chỉ tải lên file hình ảnh (JPG, PNG, WEBP)!");
+      return;
+    }
+
+    // Vượt qua kiểm tra -> Xóa lỗi cũ và bắt đầu upload
     setIsUploading(true);
+    setErrorMsg(null);
+
     const formData = new FormData();
-    formData.append("image", file); // Chìa khóa 'image' khớp với Backend Multer
+    formData.append("image", file);
 
     try {
       const token = localStorage.getItem("token");
-      // Gọi trực tiếp fetch vì FormData không dùng Content-Type: application/json như apiClient
       const response = await fetch(
         `${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/upload`,
         {
@@ -81,13 +100,13 @@ export default function CreateProperty() {
 
       const data = await response.json();
       if (data.status === "success") {
-        setImageUrl(data.url); // Lưu URL ảnh trả về từ Cloudinary
+        setImageUrl(data.url);
         setErrorMsg(null);
       } else {
-        setErrorMsg(data.message || "Lỗi upload ảnh");
+        setErrorMsg(data.message || "Lỗi upload ảnh từ máy chủ");
       }
     } catch (err) {
-      setErrorMsg("Không thể kết nối đến server upload");
+      setErrorMsg("Không thể kết nối đến server upload. Vui lòng thử lại sau.");
     } finally {
       setIsUploading(false);
     }
@@ -117,15 +136,17 @@ export default function CreateProperty() {
       if (!imageUrl)
         throw new Error("Vui lòng tải lên 1 ảnh đại diện cho dự án!");
 
-      const attributes: Record<string, any> = {
-        image_url: imageUrl, // Nhét URL ảnh vào JSONB attributes
-      };
+      const attributes: Record<string, any> = {};
 
-      if (data.property_type === "chung_cu") {
+      attributes.image_url = imageUrl;
+
+      // THÊM ĐIỀU KIỆN "|| data.property_type === 'nha_pho'" VÀO ĐÂY:
+      if (
+        data.property_type === "chung_cu" ||
+        data.property_type === "nha_pho"
+      ) {
         if (!data.tang || !data.phong_ngu)
-          throw new Error(
-            "Vui lòng nhập đầy đủ Số tầng và Phòng ngủ cho Chung cư",
-          );
+          throw new Error("Vui lòng nhập đầy đủ Số tầng và Phòng ngủ");
         attributes.tang = data.tang;
         attributes.phong_ngu = data.phong_ngu;
       } else if (data.property_type === "dat_nen") {
@@ -169,15 +190,28 @@ export default function CreateProperty() {
         </div>
       </div>
 
+      {/* 1. Báo lỗi từ Backend (Đã có sẵn) */}
       {errorMsg && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium border border-red-100">
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium border border-red-100 mb-4">
           {errorMsg}
+        </div>
+      )}
+
+      {/* 2. THÊM ĐOẠN NÀY: Báo lỗi từ Frontend Zod (Chống lỗi ẩn) */}
+      {Object.keys(errors).length > 0 && (
+        <div className="bg-orange-50 text-orange-600 p-4 rounded-xl text-sm font-medium border border-orange-100 mb-4">
+          <p className="font-bold mb-1">Vui lòng kiểm tra lại dữ liệu nhập:</p>
+          <ul className="list-disc pl-5">
+            {Object.values(errors).map((err: any, idx) => (
+              <li key={idx}>{err.message || "Trường dữ liệu không hợp lệ"}</li>
+            ))}
+          </ul>
         </div>
       )}
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-gray-100 p-8 space-y-8"
+        className="max-w-6xl mx-auto pb-20"
       >
         {/* ========================================== */}
         {/* KHU VỰC UPLOAD ẢNH                         */}
@@ -267,7 +301,7 @@ export default function CreateProperty() {
                 Mức giá (VNĐ) *
               </label>
               <input
-                {...register("price", { valueAsNumber: true })}
+                {...register("price")}
                 type="number"
                 placeholder="VD: 3500000000"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
@@ -310,7 +344,7 @@ export default function CreateProperty() {
                     Số tầng
                   </label>
                   <input
-                    {...register("tang", { valueAsNumber: true })}
+                    {...register("tang")}
                     type="number"
                     placeholder="VD: 15"
                     className="w-full px-4 py-2.5 rounded-lg border border-gray-200"
@@ -321,7 +355,7 @@ export default function CreateProperty() {
                     Phòng ngủ
                   </label>
                   <input
-                    {...register("phong_ngu", { valueAsNumber: true })}
+                    {...register("phong_ngu")}
                     type="number"
                     placeholder="VD: 2"
                     className="w-full px-4 py-2.5 rounded-lg border border-gray-200"
@@ -336,7 +370,7 @@ export default function CreateProperty() {
                   Mặt tiền (mét)
                 </label>
                 <input
-                  {...register("mat_tien", { valueAsNumber: true })}
+                  {...register("mat_tien")}
                   type="number"
                   placeholder="VD: 5"
                   className="w-full px-4 py-2.5 rounded-lg border border-gray-200"

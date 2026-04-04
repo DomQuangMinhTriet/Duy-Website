@@ -5,6 +5,7 @@ import "./index.css";
 import { AuthProvider } from "./context/AuthContext";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { LanguageProvider } from "./context/LanguageContext.tsx";
 
 // Khởi tạo Query Client để quản lý Cache (Bộ nhớ đệm)
 const queryClient = new QueryClient({
@@ -21,7 +22,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <App />
+          <LanguageProvider>
+            <App />
+          </LanguageProvider>
         </AuthProvider>
       </QueryClientProvider>
     </HelmetProvider>

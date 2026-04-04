@@ -1,17 +1,26 @@
 import { apiClient } from "./apiClient";
 
 export const leadService = {
-  // Lấy danh sách khách hàng liên hệ
-  getAll: () => apiClient("/leads"),
+  // --- HÀM PUBLIC (Dành cho Storefront) ---
+  create: (payload: {
+    property_id: string;
+    name: string;
+    email: string;
+    phone: string;
+    message?: string;
+  }) =>
+    apiClient("/leads", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 
-  // Cập nhật trạng thái khách hàng (VD: 'new' -> 'contacted')
+  // --- CÁC HÀM ADMIN (Giữ nguyên) ---
+  getAll: () => apiClient("/leads"),
   updateStatus: (leadId: string, status: string) =>
     apiClient(`/leads/${leadId}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
     }),
-
-  // Xóa khách hàng
   delete: (leadId: string) =>
     apiClient(`/leads/${leadId}`, {
       method: "DELETE",
