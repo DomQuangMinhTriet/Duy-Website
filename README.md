@@ -48,3 +48,21 @@ A high-performance, SEO-optimized, and multi-tenant real estate platform. Built 
    ```bash
    git clone [your-repo-link]
    npm install
+   ```
+2. **Environment:**
+   Create `.env` in `storefront`, `admin-panel`, and `backend`.
+3. **Database Setup:**
+   Run `docs/schema_v2.sql` (Hierarchy + RLS) in Supabase SQL Editor.
+4. **Dev Mode:**
+   ```bash
+   npm run dev
+   ```
+
+## 🔐 User Roles
+1. **Admin:** Full system control, auto-approved posts.
+2. **Customer (Guest):** Access all content, submit leads. Registration required for comments/posts.
+3. **Community Member:** Authenticated user for discussions (Moderated).
+4. **Seller (Agent):** Isolated workspace for property and lead management (Approved by Admin).
+
+## 🛡️ License
+Distributed under the MIT License.
