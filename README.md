@@ -1,71 +1,50 @@
-# 🏢 Real Estate Multi-Tenant Platform
+# 🏢 Real Estate Enterprise Platform (V2.1)
 
 ![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React_SPA-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-181818?style=for-the-badge&logo=supabase&logoColor=3ECF8E)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 
-A comprehensive, scalable, and highly customizable real estate platform designed for property sales. The system leverages a **Boundary-Control-Entity (BCE)** architecture, separating a flexible Next.js theme engine from a secure Node.js backend, all powered by a Supabase PostgreSQL database with strict Data Isolation.
+A high-performance, SEO-optimized, and multi-tenant real estate platform. Built for property sales with a cutting-edge Theme Engine, comprehensive community features, and professional agent management.
 
-## ✨ Key Features
+## 🌟 Core Pillars
 
-- 🎨 **Dynamic Theme Engine (UI/UX First):** Utilizes Next.js App Router and Route Groups to deliver completely distinct UIs (up to 90% difference) for different property landing pages (e.g., Luxury, Eco-Green) on the same domain without CSS conflicts.
-- 🗄️ **Hybrid Database Schema:** Handles complex, varying property data by combining core relational columns with a robust `JSONB` attribute architecture, allowing up to 70% attribute variance between property types (e.g., Land vs. Apartments).
-- 🔐 **Multi-Tenant & Enterprise Security:** Implements rigorous Role-Based Access Control (RBAC) and Row-Level Security (RLS) acting as a Virtual Private Database (VPD). Sellers have completely isolated workspaces and lead data.
-- 🌍 **Automated Localization:** Built-in workflow for multi-language support (EN, ZH, KO) integrating third-party translation APIs with an admin-approval draft system.
-- 💬 **Community Forum & Lead Routing:** Integrated discussion boards with moderation, paired with dynamic lead capture forms that trigger real-time email notifications via Resend/Brevo.
+### 1. 🎨 Theme Engine (UI/UX First)
+- **Extreme Variance:** Each theme is 80-90% different, tailored for specific projects (e.g., Luxury 3D vs. Eco-Green).
+- **Dictionary Pattern:** Scalable architecture allowing new themes to be added without refactoring.
+- **Dynamic Assignment:** Apply unique themes to specific projects/landing pages on a single domain.
 
-## 🏗️ System Architecture
+### 2. 🚀 SEO & Storefront (Next.js SSR)
+- **SSR Power:** Server-Side Rendering for all property pages to ensure perfect Google indexing and social media previews (Zalo/Facebook).
+- **Hierarchical Navigation:** Investor -> Project -> Zone -> Product structure to prevent "visual clutter".
+- **Advanced UX:** Mobile-first design, floating contact buttons, and "No-Login" wishlist.
 
-The project is structured as a logical Monorepo containing both the Frontend and Backend layers for streamlined development.
+### 3. 🗄️ Hybrid Multi-Tenant Data
+- **70% Attribute Variance:** Handles complex data (Land vs. Apartment) using PostgreSQL JSONB.
+- **Enterprise Security:** Virtual Private Database (VPD) logic via Supabase RLS. Sellers only see their own leads and properties.
 
-```text
-real-estate-platform/
-├── frontend/             # Next.js (App Router)
-│   ├── src/app/(admin)   # Vite-inspired Admin Panel SPA
-│   └── src/app/(storefront) # Public Web & Dynamic Theme Engine
-└── backend/              # Node.js + Express API Gateway
-    ├── src/controllers/  # Business Logic (Email, Translations, Moderation)
-    └── src/middlewares/  # Auth & Role Validation
+### 4. 💬 Community & CMS
+- **Admin Personal Blog:** Dedicated space for Admin insights.
+- **Moderated Forum:** Full control over community posts and comments.
+- **Workflow i18n:** Auto-translation (EN, ZH, KO) -> Admin Review -> Publish.
 
-🚀 Getting Started
-Prerequisites
-Node.js (v18.17 or newer)
+## 🏗️ Architecture Detail
 
-npm or pnpm
+- **Storefront (`apps/storefront`):** Next.js App Router (SSR) for Customers.
+- **Admin Panel (`apps/admin-panel`):** Vite + React SPA for high-speed management.
+- **Backend (`backend/`):** Node.js API Gateway with Zod validation and sharp image optimization.
+- **Database:** Supabase with strict RLS and hierarchical schema.
 
-A Supabase account (Region: Singapore recommended)
+## 🚦 Getting Started
 
-Installation:
+### Prerequisites
+- Node.js (v18.17+)
+- Supabase Account (Region: Singapore)
+- API Keys: Cloudinary, Resend, Translation Service (DeepL/Google).
 
-Clone the repository:
-git clone [https://github.com/YOUR-USERNAME/real-estate-platform.git](https://github.com/YOUR-USERNAME/real-estate-platform.git)
-cd real-estate-platform
-
-Install dependencies:
-# Install root tools (concurrently)
-npm install
-
-# Install frontend and backend dependencies
-cd frontend && npm install
-cd ../backend && npm install
-cd ..
-
-Environment Setup:
-Create .env files in both frontend and backend directories. Refer to .env.example for required keys (Supabase URL, Anon Key, Service Role Key, Resend API Key).
-
-Database Seeding:
-Execute the provided DDL and RLS SQL scripts located in docs/schema.sql within your Supabase SQL Editor to initialize the Hybrid Schema and security policies.
-
-Run the Development Servers:
-Launch both Next.js and Node.js simultaneously from the root directory:
-npm run dev
-Storefront: http://localhost:3000
-
-Admin Dashboard: http://localhost:3000/admin
-
-Backend API: http://localhost:5000
-
-🛡️ License
-Distributed under the MIT License. See LICENSE for more information.
+### Installation
+1. **Clone & Install:**
+   ```bash
+   git clone [your-repo-link]
+   npm install
