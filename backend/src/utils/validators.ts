@@ -73,3 +73,38 @@ export const createLeadSchema = z.object({
     message: z.string().optional(),
   }),
 });
+
+// ==========================================
+// 4. SCHEMA PHÂN CẤP (INVESTORS, PROJECTS, ZONES)
+// ==========================================
+export const createInvestorSchema = z.object({
+  body: z.object({
+    name: z.string().min(2, "Tên chủ đầu tư phải có ít nhất 2 ký tự"),
+    description: z.string().optional(),
+  }),
+});
+
+export const createProjectSchema = z.object({
+  body: z.object({
+    investor_id: z.string().uuid("ID chủ đầu tư không hợp lệ"),
+    name: z.string().min(2, "Tên dự án phải có ít nhất 2 ký tự"),
+    description: z.string().optional(),
+  }),
+});
+
+export const createZoneSchema = z.object({
+  body: z.object({
+    project_id: z.string().uuid("ID dự án không hợp lệ"),
+    name: z.string().min(2, "Tên phân khu phải có ít nhất 2 ký tự"),
+  }),
+});
+
+// ==========================================
+// 5. SCHEMA BLOG POST (ADMIN)
+// ==========================================
+export const createBlogPostSchema = z.object({
+  body: z.object({
+    title: z.string().min(5, "Tiêu đề bài viết phải có ít nhất 5 ký tự"),
+    content: z.string().min(10, "Nội dung bài viết quá ngắn"),
+  }),
+});
